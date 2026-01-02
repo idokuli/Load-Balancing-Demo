@@ -28,23 +28,23 @@ class S3Service:
             return None
 
     def list_files(self, bucket_name, prefix=''):
-    if prefix and not prefix.endswith('/'):
-        prefix += '/'
-        
-    response = self.client.list_objects_v2(
-        Bucket=bucket_name, 
-        Prefix=prefix, 
-        Delimiter='/'
-    )
-    
-    folders = [p['Prefix'] for p in response.get('CommonPrefixes', [])]
-    
-    files = []
-    for obj in response.get('Contents', []):
-        if obj['Key'] != prefix:
-            files.append(obj['Key'])
+        if prefix and not prefix.endswith('/'):
+            prefix += '/'
             
-    return folders, files
+        response = self.client.list_objects_v2(
+            Bucket=bucket_name, 
+            Prefix=prefix, 
+            Delimiter='/'
+        )
+        
+        folders = [p['Prefix'] for p in response.get('CommonPrefixes', [])]
+        
+        files = []
+        for obj in response.get('Contents', []):
+            if obj['Key'] != prefix:
+                files.append(obj['Key'])
+                
+        return folders, files
 
     def upload(self, bucket_name, file_obj, filename, content_type):
         self.client.upload_fileobj(
