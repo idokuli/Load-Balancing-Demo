@@ -5,9 +5,10 @@
     <title>S3 Manager</title>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 40px;
             background: #eef2f7;
+            color: #333;
         }
 
         .container {
@@ -16,7 +17,7 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .header {
@@ -25,66 +26,97 @@
             align-items: center;
             border-bottom: 2px solid #3498db;
             padding-bottom: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
+            gap: 15px;
         }
 
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            position: relative;
+        .search-bar {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            outline: none;
+        }
+
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
             font-weight: bold;
         }
 
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .close-btn {
-            float: right;
-            cursor: pointer;
-            font-size: 20px;
-        }
-
-        .breadcrumb {
+        .versioning-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f4f9;
+            padding: 10px 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
             font-size: 14px;
-            color: #7f8c8d;
         }
 
-        .breadcrumb a {
-            text-decoration: none;
-            color: #3498db;
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
             font-weight: bold;
+            font-size: 12px;
+        }
+
+        .badge-on {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-off {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
         }
 
         .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
         }
 
-        .file-item:hover {
-            background: #f9fbff;
+        .file-info {
+            display: flex;
+            flex-direction: column;
         }
 
-        .item-link {
-            text-decoration: none;
+        .file-name {
             color: #2c3e50;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 15px;
+        }
+
+        .file-category {
+            color: #95a5a6;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         .btn {
@@ -94,6 +126,7 @@
             color: white;
             font-size: 13px;
             font-weight: bold;
+            display: inline-block;
         }
 
         .btn-download {
@@ -105,20 +138,27 @@
             margin-left: 5px;
         }
 
-        .btn-logout {
-            background: #e74c3c;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
+        .btn-history {
+            background: #34495e;
+            margin-right: 5px;
         }
 
         .upload-section {
-            background: #f9f9f9;
+            margin-bottom: 30px;
             padding: 20px;
-            border: 1px dashed #3498db;
+            background: #f9f9f9;
             border-radius: 8px;
-            margin-bottom: 20px;
+            border: 1px dashed #3498db;
+        }
+
+        .btn-upload {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -126,121 +166,50 @@
 <body>
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">
-            <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
+        {% if messages %}{% for category, message in messages %}<div class="flash flash-{{ category }}">{{ message }}
+        </div>{% endfor %}{% endif %}
         {% endwith %}
-
         <div class="header">
             <h2 style="margin:0;">Bucket: {{ bucket }}</h2>
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search files...">
             <a href="/logout" class="btn-logout">Logout</a>
         </div>
-
-        <div class="breadcrumb">
-            <a href="{{ url_for('index', path='') }}">Root</a>
-            {% if current_path %}
-            {% set parts = current_path.strip('/').split('/') %}
-            {% for part in parts %} / {{ part }}{% endfor %}
-            {% endif %}
+        <div class="versioning-bar">
+            <div>Versioning: <span class="badge {% if v_status == 'Enabled' %}badge-on{% else %}badge-off{% endif %}">{{
+                    v_status }}</span></div>
+            <a href="/toggle_versioning" class="btn" style="background: #34495e; font-size: 11px;">Switch {% if v_status
+                == 'Enabled' %}OFF{% else %}ON{% endif %}</a>
         </div>
-
         <div class="upload-section">
-            <form id="uploadForm" enctype="multipart/form-data"
-                style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <input type="hidden" name="current_path" id="currentPath" value="{{ current_path }}">
-                <input type="file" name="file" id="fileInput" required style="flex-grow: 1;">
-                <button type="submit" id="uploadBtn"
-                    style="background:#3498db; color:white; border:none; padding:10px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">
-                    Upload
-                </button>
+            <form action="/upload" method="post" enctype="multipart/form-data"
+                style="display: flex; gap: 15px; align-items: center;">
+                <input type="file" name="file" required style="flex-grow: 1;">
+                <button type="submit" class="btn-upload">Upload File</button>
             </form>
-
-            <div id="progressContainer" style="display: none; width: 100%; margin-top: 15px;">
-                <div style="width: 100%; background-color: #ddd; border-radius: 4px; overflow: hidden;">
-                    <div id="progressBar"
-                        style="width: 0%; height: 20px; background-color: #2ecc71; transition: width 0.2s;"></div>
-                </div>
-                <div id="progressText" style="font-size: 12px; color: #7f8c8d; margin-top: 5px; text-align: center;">0%
-                </div>
-            </div>
         </div>
         <div id="fileList">
-            {% for folder in folders %}
-            <div class="file-item">
-                <a href="{{ url_for('index', path=folder) }}" class="item-link">
-                    <span>📁</span> {{ folder.split('/')[-2] }}/
-                </a>
-                <span style="color:#95a5a6; font-size:11px;">FOLDER</span>
-            </div>
-            {% endfor %}
-
             {% for file in files %}
             <div class="file-item">
-                <div class="item-link">
-                    <span>📄</span> {{ file.split('/')[-1] }}
-                </div>
+                <div class="file-info"><span class="file-name">{{ file.split('/')[-1] }}</span><span
+                        class="file-category">Path: {{ file }}</span></div>
                 <div>
+                    <a href="/history/{{ file }}" class="btn btn-history">History</a>
                     <a href="{{ url_for('download', filename=file) }}" class="btn btn-download">Download</a>
                     <a href="{{ url_for('delete', filename=file) }}" class="btn btn-delete"
-                        onclick="return confirm('Delete?')">Delete</a>
+                        onclick="return confirm('Delete latest?')">Delete</a>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-
     <script>
-        const uploadForm = document.getElementById('uploadForm');
-        const progressBar = document.getElementById('progressBar');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressText = document.getElementById('progressText');
-        const uploadBtn = document.getElementById('uploadBtn');
-
-        uploadForm.onsubmit = function (e) {
-            e.preventDefault();
-            const file = document.getElementById('fileInput').files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('current_path', document.getElementById('currentPath').value);
-
-            const xhr = new XMLHttpRequest();
-            progressContainer.style.display = 'block';
-            uploadBtn.disabled = true;
-            uploadBtn.style.background = '#bdc3c7';
-
-            xhr.upload.addEventListener('progress', function (e) {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + '%';
-                    progressText.innerText = 'Uploading: ' + percent + '%';
-                }
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            let filter = this.value.toLowerCase();
+            document.querySelectorAll('.file-item').forEach(item => {
+                let text = item.querySelector('.file-name').textContent.toLowerCase();
+                item.style.display = text.includes(filter) ? '' : 'none';
             });
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    window.location.reload();
-                } else {
-                    alert('Upload failed. Check server console.');
-                    uploadBtn.disabled = false;
-                    uploadBtn.style.background = '#3498db';
-                }
-            };
-
-            xhr.open('POST', '/upload', true);
-            xhr.send(formData);
-        };
-
-        // Combined timeout script
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(a => a.style.display = 'none');
-        }, 4000);
+        });
     </script>
 </body>
 

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Version History</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 40px;
+            background: #eef2f7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .latest {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">← Back to Files</a>
+        <h2>History: {{ filename }}</h2>
+        <table>
+            <tr style="background:#f8f9fa;">
+                <th>ID</th>
+                <th>Modified</th>
+                <th>Size (KB)</th>
+                <th>Action</th>
+            </tr>
+            {% for v in versions %}
+            <tr>
+                <td>{{ v.id[:10] }}... {% if v.is_latest %}<span class="latest">(LATEST)</span>{% endif %}</td>
+                <td>{{ v.last_modified }}</td>
+                <td>{{ v.size }}</td>
+                <td><a href="/download_version/{{ filename }}/{{ v.id }}"
+                        style="color: #2ecc71; font-weight: bold; text-decoration: none;">Download</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+
+</html>
