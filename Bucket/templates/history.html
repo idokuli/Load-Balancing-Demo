@@ -5,18 +5,17 @@
     <title>Version History</title>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 40px;
-            background: #eef2f7;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 40px;
         }
 
         .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
+            background-color: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 700px;
+            margin: auto;
+            border-radius: 10px;
         }
 
         table {
@@ -29,49 +28,42 @@
         td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        tr:hover {
-            background: #f9f9f9;
+            border-bottom: 1px solid #eee;
         }
 
         .latest {
-            color: #27ae60;
+            color: green;
             font-weight: bold;
             font-size: 11px;
-        }
-
-        .btn-back {
-            text-decoration: none;
-            color: #3498db;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 10px;
+            border: 1px solid green;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <a href="/" class="btn-back">← Back to Files</a>
-        <h2>History: {{ filename }}</h2>
+        <a href="/" style="font-size: 13px; color: #007bff; text-decoration: none;">&larr; Back</a>
+        <h3>History: {{ filename }}</h3>
         <table>
-            <tr style="background:#f8f9fa;">
-                <th>ID</th>
-                <th>Modified</th>
-                <th>Size (KB)</th>
-                <th>Action</th>
-            </tr>
-            {% for v in versions %}
-            <tr>
-                <td>{{ v.id[:10] }}... {% if v.is_latest %}<span class="latest">(LATEST)</span>{% endif %}</td>
-                <td>{{ v.last_modified }}</td>
-                <td>{{ v.size }}</td>
-                <td><a href="/download_version/{{ filename }}/{{ v.id }}"
-                        style="color: #2ecc71; font-weight: bold; text-decoration: none;">Download</a></td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Version ID</th>
+                    <th>Date</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in versions %}
+                <tr>
+                    <td><code>{{ v.id[:12] }}...</code> {% if v.is_latest %}<span class="latest">LATEST</span>{% endif
+                        %}</td>
+                    <td>{{ v.last_modified.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ v.size }} KB</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </body>
